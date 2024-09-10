@@ -2,8 +2,10 @@ package com.congquynguyen.identityservice.controller;
 
 import com.congquynguyen.identityservice.dto.request.UserCreationRequest;
 import com.congquynguyen.identityservice.dto.request.UserUpdateRequest;
+import com.congquynguyen.identityservice.dto.response.ApiResponse;
 import com.congquynguyen.identityservice.entity.UserEntity;
 import com.congquynguyen.identityservice.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +19,13 @@ public class UserController {
     private UserService userService;
 
     @PostMapping()
-    UserEntity createUser(@RequestBody UserCreationRequest userCreationRequest) {
-        return userService.createRequest(userCreationRequest);
+    ApiResponse<UserEntity> createUser(@RequestBody @Valid UserCreationRequest userCreationRequest) {
+        ApiResponse<UserEntity> apiResponse = new ApiResponse<>();
+
+        apiResponse.setCode(200);
+        apiResponse.setResult(userService.createRequest(userCreationRequest));
+
+        return apiResponse;
     }
 
     @GetMapping()
@@ -33,7 +40,7 @@ public class UserController {
 
     @PutMapping("/{userId}")
     UserEntity updateUser(@PathVariable("userId") String userId,
-                          @RequestBody UserUpdateRequest userUpdateRequest) {
+                          @RequestBody @Valid UserUpdateRequest userUpdateRequest) {
         return userService.updateUser(userId, userUpdateRequest);
     }
 

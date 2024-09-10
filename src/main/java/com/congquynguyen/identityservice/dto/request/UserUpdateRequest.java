@@ -1,14 +1,23 @@
 package com.congquynguyen.identityservice.dto.request;
 
+import com.congquynguyen.identityservice.validation.MinAge;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDate;
 
 public class UserUpdateRequest {
+
+    @Size(min = 8, message = "PASSWORD_INVALID")
     private String password;
 
+    @NotEmpty(message = "First name is not empty")
     private String firstName;
 
+    @NotEmpty(message = "Last name is not empty")
     private String lastName;
 
+    @MinAge(value = 16, message = "You must be at least 16 years old to register")
     private LocalDate dob;
 
     public String getPassword() {
