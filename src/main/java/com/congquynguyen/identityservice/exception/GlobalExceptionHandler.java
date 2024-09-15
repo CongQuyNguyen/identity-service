@@ -2,6 +2,7 @@ package com.congquynguyen.identityservice.exception;
 
 import com.congquynguyen.identityservice.dto.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,7 +26,21 @@ public class GlobalExceptionHandler {
         ApiResponse<String> apiResponse = new ApiResponse<>();
         apiResponse.setCode(e.getErrorCode().getCode());
         apiResponse.setMessage(e.getErrorCode().getMessage());
-        return ResponseEntity.badRequest().body(apiResponse);
+        return ResponseEntity
+                .status(e.getErrorCode().getHttpStatusCode())   // Set HttpStatusCode
+                .body(apiResponse);
+    }
+
+    // Exception xử lý quyền không đủ quyền để truy cập vào một endpoint (AccessDenied)
+    @ExceptionHandler(value = AccessDeniedException.class)
+    ResponseEntity<ApiResponse<String>> accessDeniedExceptionHandler(AccessDeniedException e) {
+        ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
+        ApiResponse<String> apiResponse = new ApiResponse<>();
+        apiResponse.setCode(errorCode.getCode());
+        apiResponse.setMessage(errorCode.getMessage());
+        return ResponseEntity
+                .status(errorCode.getHttpStatusCode())
+                .body(apiResponse);
     }
 
     // Đây là loại Exception khi sai yêu cầu về các field (Json)
