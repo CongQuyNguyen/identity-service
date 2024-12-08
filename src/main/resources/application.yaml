@@ -1,14 +1,16 @@
 server:
   port: 8080
   servlet:
+    # Quy định cho mỗi microservice
     context-path: /identity
 
 spring:
   datasource:
     url: "jdbc:mysql://localhost:3306/identity_service"
     username: "root"
-    password: "Congquy2004@"
+    password: "root"
   jpa:
+    # Cấu hình jpa tự gen table
     hibernate:
       ddl-auto: update
     show-sql: true

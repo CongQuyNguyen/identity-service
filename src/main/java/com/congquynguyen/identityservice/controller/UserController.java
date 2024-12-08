@@ -4,8 +4,8 @@ import com.congquynguyen.identityservice.dto.request.UserCreationRequest;
 import com.congquynguyen.identityservice.dto.request.UserUpdateRequest;
 import com.congquynguyen.identityservice.dto.response.ApiResponse;
 import com.congquynguyen.identityservice.dto.response.UserResponse;
-import com.congquynguyen.identityservice.entity.UserEntity;
 import com.congquynguyen.identityservice.service.UserService;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +22,7 @@ import java.util.List;
 @RequestMapping("/users")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)  // Nếu field nào truyền qua bị null sẽ kh đổi sang json để tránh lỗi
 public class UserController {
 
     UserService userService;

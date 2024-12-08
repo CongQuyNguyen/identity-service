@@ -28,17 +28,17 @@ public class SecurityConfig {
 
     private final String[] PUBLIC_ENDPOINT = {
             "auth/login",
-            "auth/introspect",
+            "auth/introspect"
     };
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)  // Ẩn đi csrf (một phương thức chống tấn công csrf)
                 .authorizeRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/users").hasRole(Role.ADMIN.name())
-                        .anyRequest()
+                        .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()  // Tất cả đều được accept
+                        .requestMatchers(HttpMethod.GET, "/users").hasRole(Role.ADMIN.name())   // Chỉ ADMIN mới được vào
+                        .anyRequest()   // Tất cả các cái khác phải được authenticated thì mới được accept
                         .authenticated());
 
         // Config for valid token generated to decode token from OAuth (in header)

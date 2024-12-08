@@ -2,7 +2,6 @@ package com.congquynguyen.identityservice.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
 
 @Data
 @AllArgsConstructor
