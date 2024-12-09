@@ -24,12 +24,9 @@ public class ApplicationInitConfig {
     ApplicationRunner applicationRunner(UserRepository userRepository) {
         return args -> {
             if(userRepository.findByUsername("admin").isEmpty()) {
-                HashSet<String> roles = new HashSet<>();
-                roles.add(Role.ADMIN.name());
                 UserEntity admin = UserEntity.builder()
                         .username("admin")
                         .password(passwordEncoder.encode("admin"))
-                        .roles(roles)
                         .build();
                 userRepository.save(admin);
                 log.warn("ADMIN has been created");

@@ -39,5 +39,6 @@ public class UserEntity {
     LocalDate dob;
 
     @Column(name = "roles")
-    Set<String> roles;
+    @ManyToMany
+    Set<RoleEntity> roles;
 }

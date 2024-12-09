@@ -22,10 +22,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
 import java.util.Date;
-import java.util.Set;
 import java.util.StringJoiner;
 
 @Service
@@ -89,7 +89,7 @@ public class AuthenticationService {
                 .issuer("congquynguyen")
                 .issueTime(new Date())
                 .expirationTime(new Date(new Date().getTime() + 1000 * 60 * 60))
-                .claim("scope", buildScope(userEntity.getRoles()))
+                .claim("scope", buildScope(userEntity))
                 .build();
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
         JWSObject jwsObject = new JWSObject(jwsHeader, payload);
@@ -105,11 +105,21 @@ public class AuthenticationService {
     }
 
     // Build a scope from user to attach into token
-    private String buildScope(Set<String> scopes) {
+    private String buildScope(UserEntity userEntity) {
         StringJoiner stringJoiner = new StringJoiner(" ");
-        if(!scopes.isEmpty()) {
-            scopes.forEach(stringJoiner::add);
+
+        // Gán role, mỗi role gán thêm các permission
+        if (!CollectionUtils.isEmpty(userEntity.getRoles())) {
+            userEntity.getRoles().forEach(role -> {
+                stringJoiner.add("ROLE_" + role.getName());
+                if (!CollectionUtils.isEmpty(role.getPermissions())) {
+                    role.getPermissions().forEach(permission -> {
+                        stringJoiner.add(permission.getName());
+                    });
+                }
+            });
         }
+
         return stringJoiner.toString();
     }
 }

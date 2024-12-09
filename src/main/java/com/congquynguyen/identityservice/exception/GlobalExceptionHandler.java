@@ -33,14 +33,16 @@ public class GlobalExceptionHandler {
 
     // Exception xử lý quyền không đủ quyền để truy cập vào một endpoint (AccessDenied)
     @ExceptionHandler(value = AccessDeniedException.class)
-    ResponseEntity<ApiResponse<String>> accessDeniedExceptionHandler(AccessDeniedException e) {
+    ResponseEntity<ApiResponse> accessDeniedExceptionHandler(AccessDeniedException e) {
         ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
-        ApiResponse<String> apiResponse = new ApiResponse<>();
-        apiResponse.setCode(errorCode.getCode());
-        apiResponse.setMessage(errorCode.getMessage());
-        return ResponseEntity
-                .status(errorCode.getHttpStatusCode())
-                .body(apiResponse);
+
+        // Cách khác so với 3 cách còn lại
+        return ResponseEntity.status(errorCode.getHttpStatusCode()).body(
+                ApiResponse.builder()
+                        .code(errorCode.getCode())
+                        .message(errorCode.getMessage())
+                        .build()
+        );
     }
 
     // Đây là loại Exception khi sai yêu cầu về các field (Json)

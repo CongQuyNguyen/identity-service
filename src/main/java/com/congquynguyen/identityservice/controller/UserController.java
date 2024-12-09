@@ -69,6 +69,14 @@ public class UserController {
         userService.deleteUser(userId);
     }
 
+    @GetMapping("/my-info")
+    ApiResponse<UserResponse> getMyInfo() {
+        return ApiResponse.<UserResponse>builder()
+                .code(200)
+                .result(userService.getMyInfo())
+                .build();
+    }
+
     // Demo to see username and scope
     private void checkInfo() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();

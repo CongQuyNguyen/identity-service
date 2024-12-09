@@ -7,7 +7,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
-import java.util.Set;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -28,5 +28,5 @@ public class UserUpdateRequest {
     @MinAge(value = 16, message = "You must be at least 16 years old to register")
     LocalDate dob;
 
-    Set<String> roles;
+    List<String> roles;
 }

@@ -28,7 +28,9 @@ public class SecurityConfig {
 
     private final String[] PUBLIC_ENDPOINT = {
             "auth/login",
-            "auth/introspect"
+            "auth/introspect",
+            "permissions",
+            "roles"
     };
 
     @Bean
@@ -37,7 +39,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)  // Ẩn đi csrf (một phương thức chống tấn công csrf)
                 .authorizeRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()  // Tất cả đều được accept
-                        .requestMatchers(HttpMethod.GET, "/users").hasRole(Role.ADMIN.name())   // Chỉ ADMIN mới được vào
+                        // .requestMatchers(HttpMethod.GET, "/users").hasRole(Role.ADMIN.name())   // Chỉ ADMIN mới được vào
                         .anyRequest()   // Tất cả các cái khác phải được authenticated thì mới được accept
                         .authenticated());
 
@@ -46,7 +48,8 @@ public class SecurityConfig {
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwtConfigurer -> jwtConfigurer
                                 .decoder(jwtDecoder())
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter())));
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                        .authenticationEntryPoint(new JWTAuthenticationEntryPointConfig()));    // Config cái lỗi bắt ở filter
         return http.build();
     }
 
@@ -70,7 +73,7 @@ public class SecurityConfig {
     @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedConverter = new JwtGrantedAuthoritiesConverter();
-        grantedConverter.setAuthorityPrefix("ROLE_");
+        grantedConverter.setAuthorityPrefix("");
 
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(grantedConverter);
