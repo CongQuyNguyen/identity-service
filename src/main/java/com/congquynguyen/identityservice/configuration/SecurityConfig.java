@@ -1,6 +1,7 @@
 package com.congquynguyen.identityservice.configuration;
 
-import com.congquynguyen.identityservice.enums.Role;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,9 +27,13 @@ public class SecurityConfig {
     @Value("${jwt.signerKey}")
     private String signerKey;
 
+    @Autowired
+    private JwtDecoderCustom jwtDecoder;
+
     private final String[] PUBLIC_ENDPOINT = {
             "auth/login",
             "auth/introspect",
+            "auth/logout",
             "permissions",
             "roles"
     };
@@ -47,21 +52,10 @@ public class SecurityConfig {
         http
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwtConfigurer -> jwtConfigurer
-                                .decoder(jwtDecoder())
+                                .decoder(jwtDecoder)
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter()))
                         .authenticationEntryPoint(new JWTAuthenticationEntryPointConfig()));    // Config cái lỗi bắt ở filter
         return http.build();
-    }
-
-    // Make a decoder to create method for inspect token form generation of system
-    @Bean
-    public JwtDecoder jwtDecoder() {
-        SecretKeySpec keySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");
-
-        return NimbusJwtDecoder
-                .withSecretKey(keySpec)
-                .macAlgorithm(MacAlgorithm.HS512)
-                .build();
     }
 
     @Bean

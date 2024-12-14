@@ -1,12 +1,19 @@
 package com.congquynguyen.identityservice.exception;
 
 import com.congquynguyen.identityservice.dto.response.ApiResponse;
+import com.congquynguyen.identityservice.validation.MinAge;
+import com.congquynguyen.identityservice.validation.MinAgeValidator;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @ControllerAdvice
@@ -47,21 +54,52 @@ public class GlobalExceptionHandler {
 
     // Đây là loại Exception khi sai yêu cầu về các field (Json)
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    ResponseEntity<ApiResponse<String>> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
-        String enumKey = Objects.requireNonNull(e.getFieldError()).getDefaultMessage(); // Lấy ra constant đã khai báo bên field - chỗ message
-
-        // Xử lý khi bị sai key validation
+    ResponseEntity<ApiResponse<List<String>>> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
+        List<String> errorMessages = new ArrayList<>();
         ErrorCode errorCode = ErrorCode.VALIDATION_INVALID;
 
-        try {
-            errorCode = ErrorCode.valueOf(enumKey);
-        } catch (IllegalArgumentException ignored) {
+        // Lặp qua tất cả các lỗi validation
+        e.getBindingResult().getFieldErrors().forEach(fieldError -> {
+            String fieldName = fieldError.getField();
+            String detailedMessage = "Validation failed for field '" + fieldName + "'";
 
-        }
+            try {
+                // Lấy thông tin class mục tiêu
+                Class<?> targetClass = e.getBindingResult().getTarget().getClass();
+                Field field = targetClass.getDeclaredField(fieldName);
 
-        ApiResponse<String> apiResponse = new ApiResponse<>();
+                // Kiểm tra nếu có @MinAge
+                MinAge minAgeAnnotation = field.getAnnotation(MinAge.class);
+                if (minAgeAnnotation != null) {
+                    int minAge = minAgeAnnotation.value();
+                    detailedMessage = "Validation failed for field '" + fieldName + "': " +
+                            "You must be at least " + minAge + " years old.";
+                }
+
+                // Thêm xử lý cho các annotation khác tại đây (nếu cần)
+                // Ví dụ: Custom annotation khác
+                // AnotherAnnotation anotherAnnotation = field.getAnnotation(AnotherAnnotation.class);
+                // if (anotherAnnotation != null) { ... }
+                Size sizeAnnotation = field.getAnnotation(Size.class);
+                if (sizeAnnotation != null) {
+                    int minLength = sizeAnnotation.min();
+                    detailedMessage = "Validation failed for field '" + fieldName + "': " +
+                            minLength + " characters is invalid.";
+                }
+
+            } catch (NoSuchFieldException | SecurityException ignored) {
+                detailedMessage += " (Unable to retrieve detailed information)";
+            }
+
+            // Thêm thông báo chi tiết vào danh sách
+            errorMessages.add(detailedMessage);
+        });
+
+        ApiResponse<List<String>> apiResponse = new ApiResponse<>();
         apiResponse.setCode(errorCode.getCode());
-        apiResponse.setMessage(errorCode.getMessage());
+        apiResponse.setMessage(String.valueOf(errorMessages));
+
         return ResponseEntity.badRequest().body(apiResponse);
     }
+
 }
