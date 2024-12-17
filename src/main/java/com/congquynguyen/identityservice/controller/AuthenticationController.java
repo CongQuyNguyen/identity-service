@@ -3,6 +3,7 @@ package com.congquynguyen.identityservice.controller;
 import com.congquynguyen.identityservice.dto.request.AuthenticationRequest;
 import com.congquynguyen.identityservice.dto.request.IntrospectRequest;
 import com.congquynguyen.identityservice.dto.request.LogoutRequest;
+import com.congquynguyen.identityservice.dto.request.RefreshRequest;
 import com.congquynguyen.identityservice.dto.response.ApiResponse;
 import com.congquynguyen.identityservice.dto.response.AuthenticationResponse;
 import com.congquynguyen.identityservice.dto.response.IntrospectResponse;
@@ -10,7 +11,6 @@ import com.congquynguyen.identityservice.service.AuthenticationService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.validator.internal.constraintvalidators.hv.CodePointLengthValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -51,6 +51,15 @@ public class AuthenticationController {
         return ApiResponse.<Void>builder()
                 .code(296)
                 .message("Logout thành công")
+                .build();
+    }
+
+    @PostMapping("/refresh")
+    ApiResponse<AuthenticationResponse> refresh(@RequestBody RefreshRequest refreshRequest) throws ParseException {
+        AuthenticationResponse response = authenticationService.refreshToken(refreshRequest);
+        return ApiResponse.<AuthenticationResponse>builder()
+                .code(296)
+                .result(response)
                 .build();
     }
 }

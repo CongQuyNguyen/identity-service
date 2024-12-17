@@ -3,6 +3,7 @@ package com.congquynguyen.identityservice.service;
 import com.congquynguyen.identityservice.dto.request.AuthenticationRequest;
 import com.congquynguyen.identityservice.dto.request.IntrospectRequest;
 import com.congquynguyen.identityservice.dto.request.LogoutRequest;
+import com.congquynguyen.identityservice.dto.request.RefreshRequest;
 import com.congquynguyen.identityservice.dto.response.AuthenticationResponse;
 import com.congquynguyen.identityservice.dto.response.IntrospectResponse;
 import com.congquynguyen.identityservice.entity.TokenValidationEntity;
@@ -20,6 +21,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,10 +30,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.StringJoiner;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -40,6 +45,14 @@ public class AuthenticationService {
     @NonFinal // Advice insert this into bean IoC
     @Value("${jwt.signerKey}")  // Read a value form .yaml
     protected String SIGNER_KEY;
+
+    @NonFinal
+    @Value("${jwt.valid-duration}")
+    protected long VALID_DURATION;
+
+    @NonFinal
+    @Value("${jwt.refreshable-duration}")
+    protected long REFRESHABLE_DURATION;
 
     UserRepository userRepository;
 
@@ -69,7 +82,7 @@ public class AuthenticationService {
         var isValid = true;
 
         try {
-            verifyToken(token);
+            verifyToken(token, false);
         } catch (AppException e) {
             isValid = false;
         }
@@ -89,7 +102,9 @@ public class AuthenticationService {
                 .subject(userEntity.getUsername())
                 .issuer("congquynguyen")
                 .issueTime(new Date())
-                .expirationTime(new Date(new Date().getTime() + 1000 * 60 * 60))
+                .expirationTime(new Date(
+                        Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()
+                ))
                 .claim("scope", buildScope(userEntity))
                 .jwtID(UUID.randomUUID().toString())    // Random id cho user
                 .build();
@@ -127,29 +142,43 @@ public class AuthenticationService {
 
     // Hàm logout với jwt
     public void logout(LogoutRequest logoutRequest) throws ParseException {
-        SignedJWT signedJWT = verifyToken(logoutRequest.getToken());
 
-        String jit = signedJWT.getJWTClaimsSet().getJWTID();
-        Date exp = signedJWT.getJWTClaimsSet().getExpirationTime();
+        try {
+            // Đọc trong docx
+            SignedJWT signedJWT = verifyToken(logoutRequest.getToken(), true);
 
-        // Lưu thông tin xuống db
-        TokenValidationEntity token = TokenValidationEntity.builder()
-                .id(jit)
-                .expiryDate(exp)
-                .build();
-        tokenValidationRepository.save(token);
+            String jit = signedJWT.getJWTClaimsSet().getJWTID();
+            Date exp = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+            // Lưu thông tin xuống db
+            TokenValidationEntity token = TokenValidationEntity.builder()
+                    .id(jit)
+                    .expiryDate(exp)
+                    .build();
+            tokenValidationRepository.save(token);
+        } catch (AppException e) {
+            log.info("Token hết hiệu lực");
+        }
+
     }
 
     // Hàm lấy thông tin từ token và verify
-    private SignedJWT verifyToken(String token) {
+    private SignedJWT verifyToken(String token, boolean isRefresh) {
         try {
             JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
             SignedJWT signedJWT = SignedJWT.parse(token);
 
-            Date expTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+            Date expTime = (isRefresh)
+                    ? new Date(signedJWT
+                        .getJWTClaimsSet()
+                        .getIssueTime()
+                        .toInstant()
+                        .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                        .toEpochMilli())
+                    : signedJWT.getJWTClaimsSet().getExpirationTime();
             var verified = signedJWT.verify(verifier);
 
-            if (!verified && !expTime.after(new Date()))
+            if (!verified || !expTime.after(new Date()))
                 throw new AppException(ErrorCode.UNAUTHENTICATED);
 
             // Kiểm tra token đã logout chưa
@@ -163,5 +192,32 @@ public class AuthenticationService {
         } catch (ParseException | JOSEException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    // Hàm refresh token
+    public AuthenticationResponse refreshToken(RefreshRequest refreshRequest) throws ParseException {
+
+        // Lấy ra thông tin của JWTSigned thông qua việc check xem token còn hiệu lực hay không
+        SignedJWT signedJWT = verifyToken(refreshRequest.getToken(), true);
+
+        // Build và logout token hiện tại
+        var jit = signedJWT.getJWTClaimsSet().getJWTID();
+        var expTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        TokenValidationEntity tokenInvalid = TokenValidationEntity.builder()
+                .id(jit)
+                .expiryDate(expTime)
+                .build();
+        tokenValidationRepository.save(tokenInvalid);
+
+        // Cập nhật token mới (refresh token)
+        var userName = signedJWT.getJWTClaimsSet().getSubject();
+        var user = userRepository.findByUsername(userName)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        var token = generateToken(user);
+        return AuthenticationResponse.builder()
+                .isAuthenticated(true)
+                .token(token)
+                .build();
     }
 }

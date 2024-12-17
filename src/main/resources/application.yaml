@@ -17,3 +17,5 @@ spring:
 
 jwt:
   signerKey: "Qr/r0T2zr61tZrbbN7Qzm7VIZ9UqwuQT14LUE9amyybHPfjFjOYC4+vYv3vHH/Dm"
+  valid-duration: 10 # (s) Thgian hợp lệ của một token
+  refreshable-duration: 120 # Trong khoảng thgian này mình có thể refresh một token (thường là day)
