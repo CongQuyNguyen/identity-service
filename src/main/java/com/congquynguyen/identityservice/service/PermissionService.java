@@ -8,6 +8,7 @@ import com.congquynguyen.identityservice.repository.PermissionRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,7 +18,10 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PermissionService {
 
+    @Autowired
     PermissionRepository permissionRepository;
+
+    @Autowired
     PermissionMapper permissionMapper;
 
     public PermissionResponse createPermission(PermissionRequest permissionRequest) {

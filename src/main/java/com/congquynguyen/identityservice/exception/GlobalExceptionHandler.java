@@ -2,11 +2,9 @@ package com.congquynguyen.identityservice.exception;
 
 import com.congquynguyen.identityservice.dto.response.ApiResponse;
 import com.congquynguyen.identityservice.validation.MinAge;
-import com.congquynguyen.identityservice.validation.MinAgeValidator;
 import jakarta.validation.constraints.Size;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,7 +12,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
