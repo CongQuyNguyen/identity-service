@@ -20,7 +20,8 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
-    @Column(name = "user_name")
+    @Column(name = "user_name", unique = true,
+            columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci")
     String username;
 
     @Column(name = "password")

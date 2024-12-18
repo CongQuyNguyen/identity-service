@@ -1,0 +1,3 @@
+jwt:
+  valid-duration: 7200 # (s) Thgian hợp lệ của một token
+  refreshable-duration: 72000 # Trong khoảng thgian này mình có thể refresh một token (thường là day)

@@ -1,10 +1,11 @@
 package com.congquynguyen.identityservice.service;
 
+import com.congquynguyen.identityservice.constant.PredefineRole;
 import com.congquynguyen.identityservice.dto.request.UserCreationRequest;
 import com.congquynguyen.identityservice.dto.request.UserUpdateRequest;
 import com.congquynguyen.identityservice.dto.response.UserResponse;
+import com.congquynguyen.identityservice.entity.RoleEntity;
 import com.congquynguyen.identityservice.entity.UserEntity;
-import com.congquynguyen.identityservice.enums.Role;
 import com.congquynguyen.identityservice.exception.AppException;
 import com.congquynguyen.identityservice.exception.ErrorCode;
 import com.congquynguyen.identityservice.mapper.UserMapper;
@@ -47,16 +48,21 @@ public class UserService {
 
     public UserResponse createRequest(UserCreationRequest request) {
 
-        // Nếu có lỗi thì chỉ cần throw một AppException với một ErrorCode đã được define sẵn
-        if(existByUsername(request.getUsername()))
-            throw new AppException(ErrorCode.USER_EXISTED);
         UserEntity userEntity = userMapper.toUserEntity(request);
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
 
-//        HashSet<String> roles = new HashSet<>();
-//        roles.add(Role.USER.name());
-//        userEntity.setRoles(roles);
-        return userMapper.toUserResponse(userRepository.save(userEntity));
+        // Set role khi thêm
+        HashSet<RoleEntity> roles = new HashSet<>();
+        roleRepository.findById(PredefineRole.USER_ROLE).ifPresent(roles::add);
+
+        userEntity.setRoles(roles);
+
+        try {
+            var user = userRepository.save(userEntity);
+            return userMapper.toUserResponse(user);
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
     }
 
     // Có thể thay thế bằng các cái endpoint ở file config, nhưng dùng cách này phổ biến hơn

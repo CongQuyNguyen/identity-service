@@ -6,9 +6,9 @@ server:
 
 spring:
   datasource:
-    url: "jdbc:mysql://localhost:3306/identity_service"
-    username: "root"
-    password: "root"
+    url: ${DBMS_URL:jdbc:mysql://localhost:3306/identity_service}
+    username: ${DBMS_USERNAME:root}
+    password: ${DBMS_PASSWORD:root}
   jpa:
     # Cấu hình jpa tự gen table
     hibernate:
@@ -16,6 +16,6 @@ spring:
     show-sql: true
 
 jwt:
-  signerKey: "Qr/r0T2zr61tZrbbN7Qzm7VIZ9UqwuQT14LUE9amyybHPfjFjOYC4+vYv3vHH/Dm"
-  valid-duration: 10 # (s) Thgian hợp lệ của một token
-  refreshable-duration: 120 # Trong khoảng thgian này mình có thể refresh một token (thường là day)
+  signerKey: ${SIGNER_KEY}
+  valid-duration: 3600 # (s) Thgian hợp lệ của một token
+  refreshable-duration: 36000 # Trong khoảng thgian này mình có thể refresh một token (thường là day)

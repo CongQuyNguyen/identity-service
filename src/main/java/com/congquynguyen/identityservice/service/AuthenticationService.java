@@ -59,6 +59,9 @@ public class AuthenticationService {
     TokenValidationRepository tokenValidationRepository;
 
     public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) {
+
+        log.info("SignerKey: {}", SIGNER_KEY);
+
         var user = userRepository.findByUsername(authenticationRequest.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
