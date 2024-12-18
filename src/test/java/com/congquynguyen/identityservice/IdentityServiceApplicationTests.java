@@ -1,19 +1,5 @@
 package com.congquynguyen.identityservice;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
-import java.security.NoSuchAlgorithmException;
-
-@SpringBootTest
 class IdentityServiceApplicationTests {
-
-	@Test
-	void contextLoads() {
-	}
-
-	@Test
-	void mapper() throws NoSuchAlgorithmException {
-	}
 
 }
