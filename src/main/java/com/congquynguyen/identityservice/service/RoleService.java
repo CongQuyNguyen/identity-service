@@ -2,8 +2,6 @@ package com.congquynguyen.identityservice.service;
 
 import com.congquynguyen.identityservice.dto.request.RoleRequest;
 import com.congquynguyen.identityservice.dto.response.RoleResponse;
-import com.congquynguyen.identityservice.exception.AppException;
-import com.congquynguyen.identityservice.exception.ErrorCode;
 import com.congquynguyen.identityservice.mapper.RoleMapper;
 import com.congquynguyen.identityservice.repository.PermissionRepository;
 import com.congquynguyen.identityservice.repository.RoleRepository;
@@ -13,20 +11,22 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.management.relation.RoleNotFoundException;
 import java.util.HashSet;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RoleService {
 
+    @Autowired
     RoleRepository roleRepository;
 
+    @Autowired
     PermissionRepository permissionRepository;
 
-    private final RoleMapper roleMapper;
+    @Autowired
+    RoleMapper roleMapper;
 
 
     public RoleResponse createRole(RoleRequest roleRequest) {

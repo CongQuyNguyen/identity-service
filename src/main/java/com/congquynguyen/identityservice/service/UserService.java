@@ -29,17 +29,21 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @EnableMethodSecurity   // Bật authorize bằng annotation - method
 public class UserService {
 
+    @Autowired
     UserRepository userRepository;
 
+    @Autowired
     UserMapper userMapper;
 
+    @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
     RoleRepository roleRepository;
 
     public boolean existByUsername(String username) {
