@@ -27,6 +27,7 @@ public class AddressService {
     UserRepository userRepository;
 
 
+    @Transactional
     public AddressResponse createAddress(AddressRequest addressRequest) {
 
         UserEntity userEntity = userRepository.findByUsername(addressRequest.getUsername())
@@ -34,13 +35,11 @@ public class AddressService {
 
         AddressEntity addressEntity = addressMapper.toAddressEntity(addressRequest);
 
-        // Gán liên kết
-        addressEntity.setUser(userEntity);
-        userEntity.getAddresses().add(addressEntity);
-
-        // Lưu
         try {
             var address = addressRepository.save(addressEntity);
+            userEntity.saveAddress(address);
+            userRepository.save(userEntity);
+
             return addressMapper.toAddressResponse(address);
         } catch (Exception e) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);

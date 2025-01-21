@@ -6,7 +6,8 @@ import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "address")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)

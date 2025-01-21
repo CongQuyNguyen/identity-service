@@ -45,5 +45,16 @@ public class UserEntity {
     Set<RoleEntity> roles;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "user")
-    Set<AddressEntity> addresses;
+    Set<AddressEntity> addresses = new HashSet<>();
+
+    public void saveAddress(AddressEntity addressEntity) {
+        if (addressEntity != null) {
+            if (addresses == null) {
+                addresses = new HashSet<>();
+            }
+
+            addressEntity.setUser(this);
+            addresses.add(addressEntity);
+        }
+    }
 }
