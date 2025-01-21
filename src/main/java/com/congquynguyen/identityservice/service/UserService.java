@@ -4,6 +4,7 @@ import com.congquynguyen.identityservice.constant.PredefineRole;
 import com.congquynguyen.identityservice.dto.request.UserCreationRequest;
 import com.congquynguyen.identityservice.dto.request.UserUpdateRequest;
 import com.congquynguyen.identityservice.dto.response.UserResponse;
+import com.congquynguyen.identityservice.entity.AddressEntity;
 import com.congquynguyen.identityservice.entity.RoleEntity;
 import com.congquynguyen.identityservice.entity.UserEntity;
 import com.congquynguyen.identityservice.exception.AppException;
@@ -16,6 +17,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -34,21 +38,11 @@ import java.util.stream.Collectors;
 @EnableMethodSecurity   // Bật authorize bằng annotation - method
 public class UserService {
 
-    @Autowired
     UserRepository userRepository;
-
-    @Autowired
     UserMapper userMapper;
-
-    @Autowired
     PasswordEncoder passwordEncoder;
-
-    @Autowired
     RoleRepository roleRepository;
 
-    public boolean existByUsername(String username) {
-        return userRepository.existsByUsername(username);
-    }
 
     public UserResponse createRequest(UserCreationRequest request) {
 
@@ -70,7 +64,7 @@ public class UserService {
     }
 
     // Có thể thay thế bằng các cái endpoint ở file config, nhưng dùng cách này phổ biến hơn
-    @PreAuthorize("hasRole('ADMIN')")   // Ngoài ra có thể hasAuthority để xác định permission
+    // @PreAuthorize("hasRole('ADMIN')")   // Ngoài ra có thể hasAuthority để xác định permission
     public List<UserResponse> getAllUsers() {
         log.info("In method get all user");
         return userRepository.findAll().stream()
@@ -78,7 +72,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    @PostAuthorize("returnObject.username = authentication.name")
+    // @PostAuthorize("returnObject.username = authentication.name")
     public UserResponse getUserById(String id) {
         return userMapper.toUserResponse(userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.UNCATEGORIZED)));
@@ -111,5 +105,17 @@ public class UserService {
 
     public void deleteUser(String id) {
         userRepository.deleteById(id);
+    }
+
+    // ===================================================================
+
+    public List<UserResponse> getAllUser(int pageNo, int pageSize) {
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        Page<UserEntity> users = userRepository.findAll(pageable);
+
+        return users.stream()
+                .map(userMapper::toUserResponse)
+                .collect(Collectors.toList());
     }
 }

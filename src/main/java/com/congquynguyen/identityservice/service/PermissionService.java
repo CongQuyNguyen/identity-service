@@ -18,10 +18,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PermissionService {
 
-    @Autowired
     PermissionRepository permissionRepository;
-
-    @Autowired
     PermissionMapper permissionMapper;
 
     public PermissionResponse createPermission(PermissionRequest permissionRequest) {

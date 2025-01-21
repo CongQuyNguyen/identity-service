@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -42,4 +43,7 @@ public class UserEntity {
     @Column(name = "roles")
     @ManyToMany
     Set<RoleEntity> roles;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "user")
+    Set<AddressEntity> addresses;
 }

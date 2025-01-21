@@ -33,7 +33,8 @@ public class SecurityConfig {
             "auth/logout",
             "auth/refresh",
             "permissions",
-            "users"
+            "users",
+            "address"
     };
 
     @Bean
@@ -43,6 +44,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)  // Ẩn đi csrf (một phương thức chống tấn công csrf)
                 .authorizeRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()  // Tất cả đều được accept
+                        .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINT).permitAll()
                         // .requestMatchers(HttpMethod.GET, "/users").hasRole(Role.ADMIN.name())   // Chỉ ADMIN mới được vào
                         .anyRequest()   // Tất cả các cái khác phải được authenticated thì mới được accept
                         .authenticated());

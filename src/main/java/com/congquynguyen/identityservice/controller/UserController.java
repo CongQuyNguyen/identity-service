@@ -25,7 +25,6 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)  // Nếu field nào truyền qua bị null sẽ kh đổi sang json để tránh lỗi
 public class UserController {
 
-    @Autowired
     UserService userService;
 
     @PostMapping()
@@ -36,7 +35,7 @@ public class UserController {
                 .build();
     }
 
-    @GetMapping()
+    @GetMapping("/list")
     ApiResponse<List<UserResponse>> getAllUsers() {
         checkInfo();
 
@@ -85,5 +84,18 @@ public class UserController {
         authentication.getAuthorities().forEach(grantedAuthority -> {
             log.info("GrantedAuthority: {}", grantedAuthority);
         });
+    }
+
+    // ============================================================================
+
+    @GetMapping
+    public ApiResponse<List<UserResponse>> getAllUsers(
+            @RequestParam(defaultValue = "0", required = false) int pageNo,
+            @RequestParam(defaultValue = "5", required = false) int pageSize) {
+
+        return ApiResponse.<List<UserResponse>>builder()
+                .code(200)
+                .result(userService.getAllUser(pageNo, pageSize))
+                .build();
     }
 }

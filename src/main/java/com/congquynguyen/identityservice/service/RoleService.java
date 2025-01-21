@@ -19,13 +19,8 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RoleService {
 
-    @Autowired
     RoleRepository roleRepository;
-
-    @Autowired
     PermissionRepository permissionRepository;
-
-    @Autowired
     RoleMapper roleMapper;
 
 

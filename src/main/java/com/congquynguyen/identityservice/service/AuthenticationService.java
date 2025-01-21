@@ -54,10 +54,7 @@ public class AuthenticationService {
     @Value("${jwt.refreshable-duration}")
     protected long REFRESHABLE_DURATION;
 
-    @Autowired
     UserRepository userRepository;
-
-    @Autowired
     TokenValidationRepository tokenValidationRepository;
 
     public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) {
